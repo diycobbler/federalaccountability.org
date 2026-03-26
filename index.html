@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Federal Accountability Dashboard — Spending, Promises & Outcomes</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -1067,7 +1068,7 @@ async function lookupReps(){
   // Step 2: Fetch all current legislators from unitedstates.io (hosted on GitHub — CORS-friendly)
   let legislators=[];
   try{
-    const r=await fetch('https://raw.githubusercontent.com/unitedstates/congress-legislators/main/legislators-current.json');
+    const r=await fetch('https://unitedstates.github.io/congress-legislators/legislators-current.json');
     legislators=await r.json();
   }catch(e){
     document.getElementById('rep-load').style.display='none';
