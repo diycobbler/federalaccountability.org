@@ -1046,50 +1046,121 @@ async function lookupReps(){
   document.getElementById('rep-res').style.display='none';
   document.getElementById('rep-load').style.display='flex';
 
-  let reps=[],state='',city='';
+  // Step 1: ZIP → state abbreviation + lat/lng via zippopotam (CORS-friendly)
+  let state='',stFull='',city='',lat=null,lng=null;
   try{
     const g=await fetch(`https://api.zippopotam.us/us/${zip}`);
     const gd=await g.json();
     state=gd.places?.[0]?.['state abbreviation']||'';
+    stFull=gd.places?.[0]?.['state']||'';
     city=gd.places?.[0]?.['place name']||'';
+    lat=parseFloat(gd.places?.[0]?.['latitude']);
+    lng=parseFloat(gd.places?.[0]?.['longitude']);
   }catch(e){}
 
+  if(!state){
+    document.getElementById('rep-load').style.display='none';
+    showRepErr(`Could not look up ZIP code ${zip}. Please check the ZIP and try again.`);
+    return;
+  }
+
+  // Step 2: Fetch all current legislators from unitedstates.io (hosted on GitHub — CORS-friendly)
+  let legislators=[];
   try{
-    const res=await fetch(`https://whoismyrepresentative.com/getall_mems.php?zip=${zip}&output=json`);
-    const rd=await res.json();
-    reps=rd.results||[];
-  }catch(e){}
+    const r=await fetch('https://raw.githubusercontent.com/unitedstates/congress-legislators/main/legislators-current.json');
+    legislators=await r.json();
+  }catch(e){
+    document.getElementById('rep-load').style.display='none';
+    showRepErr(`Could not load legislator data. <br><br>Find your reps directly:
+      <a href="https://www.house.gov/representatives/find-your-representative?zip=${zip}" target="_blank">House.gov →</a> &nbsp;
+      <a href="https://www.senate.gov/senators/" target="_blank">Senate.gov →</a>`);
+    return;
+  }
+
+  // Step 3: Get congressional district from lat/lng via Census TIGER (CORS-friendly)
+  let district=null;
+  if(lat&&lng){
+    try{
+      const tr=await fetch(`https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Legislative/MapServer/0/query?geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=BASENAME,STATE,DISTRICT&f=json`);
+      const td=await tr.json();
+      if(td.features&&td.features.length){
+        district=parseInt(td.features[0].attributes.DISTRICT,10);
+      }
+    }catch(e){}
+  }
+
+  // Step 4: Filter senators (by state) and house rep (by state + district)
+  const STATE_MAP={
+    'AL':'01','AK':'02','AZ':'04','AR':'05','CA':'06','CO':'08','CT':'09','DE':'10',
+    'FL':'12','GA':'13','HI':'15','ID':'16','IL':'17','IN':'18','IA':'19','KS':'20',
+    'KY':'21','LA':'22','ME':'23','MD':'24','MA':'25','MI':'26','MN':'27','MS':'28',
+    'MO':'29','MT':'30','NE':'31','NV':'32','NH':'33','NJ':'34','NM':'35','NY':'36',
+    'NC':'37','ND':'38','OH':'39','OK':'40','OR':'41','PA':'42','RI':'44','SC':'45',
+    'SD':'46','TN':'47','TX':'48','UT':'49','VT':'50','VA':'51','WA':'53','WV':'54',
+    'WI':'55','WY':'56','DC':'11',
+  };
+
+  const reps=[];
+
+  // Senators — filter by state, take current term
+  legislators.forEach(m=>{
+    const terms=m.terms||[];
+    const cur=terms[terms.length-1];
+    if(!cur) return;
+    if(cur.type==='sen'&&cur.state===state){
+      reps.push({...m,_role:'sen',_cur:cur});
+    }
+  });
+
+  // House rep — filter by state + district if known
+  legislators.forEach(m=>{
+    const terms=m.terms||[];
+    const cur=terms[terms.length-1];
+    if(!cur) return;
+    if(cur.type==='rep'&&cur.state===state){
+      if(district===null||cur.district===district){
+        reps.push({...m,_role:'rep',_cur:cur});
+      }
+    }
+  });
 
   document.getElementById('rep-load').style.display='none';
 
   if(!reps.length){
-    showRepErr(`Could not auto-load representatives for ZIP ${zip}${city?` (${city}, ${state})`:''}.
-      This sometimes happens due to CORS restrictions on the representative API.
-      <br><br>Find them directly:
-      <a href="https://www.house.gov/representatives/find-your-representative" target="_blank">House.gov →</a> &nbsp;
-      <a href="https://www.senate.gov/senators/" target="_blank">Senate.gov →</a> &nbsp;
-      <a href="https://www.govtrack.us/congress/members" target="_blank">GovTrack →</a>`);
+    showRepErr(`No representatives found for ZIP ${zip} (${city}, ${state}). Try searching directly:
+      <br><br>
+      <a href="https://www.house.gov/representatives/find-your-representative?zip=${zip}" target="_blank">House.gov →</a> &nbsp;
+      <a href="https://www.senate.gov/senators/senators-contact.htm" target="_blank">Senate.gov →</a>`);
     return;
   }
 
   const cards=document.getElementById('rep-cards');
   cards.innerHTML='';
-  reps.forEach(r=>{
-    const party=r.party||'I';
-    const isHouse=!!r.district;
+
+  reps.forEach(m=>{
+    const cur=m._cur;
+    const name=`${m.name.first} ${m.name.last}`;
+    const party=cur.party==='Democrat'?'D':cur.party==='Republican'?'R':'I';
+    const isSen=m._role==='sen';
+    const role=isSen?`Senator · ${stFull}`:`Representative · District ${cur.district} · ${stFull}`;
+    const phone=cur.phone||'';
+    const url=cur.url||`https://www.govtrack.us/congress/members/${m.id?.bioguide||''}`;
+    const osId=m.id?.opensecrets||'';
+    const bioguide=m.id?.bioguide||'';
+
     cards.innerHTML+=`<div class="rep-card ${party}">
-      <div class="rep-name">${r.name}</div>
-      <div class="rep-role">${isHouse?`Representative · District ${r.district}`:'Senator'} · ${party==='D'?'Democrat':party==='R'?'Republican':'Independent'} · ${state}</div>
-      ${r.phone?`<div style="font-size:12px;color:var(--t2);margin-bottom:3px">📞 ${r.phone}</div>`:''}
-      ${r.office?`<div style="font-size:11px;color:var(--t3);margin-bottom:3px">🏛️ ${r.office}</div>`:''}
-      <div class="rep-links">
-        ${r.link?`<a href="${r.link}" target="_blank" class="rep-link">Official Site</a>`:''}
-        <a href="https://www.govtrack.us/congress/members" target="_blank" class="rep-link">Voting Record</a>
-        <a href="https://www.opensecrets.org/members-of-congress" target="_blank" class="rep-link">$ Finance</a>
-        <a href="https://ballotpedia.org/${encodeURIComponent(r.name)}" target="_blank" class="rep-link">Ballotpedia</a>
+      <div class="rep-name">${name}</div>
+      <div class="rep-role">${role} · ${cur.party}</div>
+      ${phone?`<div style="font-size:12px;color:var(--t2);margin:6px 0 2px">📞 ${phone}</div>`:''}
+      <div class="rep-links" style="margin-top:12px">
+        <a href="${url}" target="_blank" class="rep-link">Official Site</a>
+        ${bioguide?`<a href="https://www.govtrack.us/congress/members/${bioguide}" target="_blank" class="rep-link">Voting Record</a>`:''}
+        ${osId?`<a href="https://www.opensecrets.org/members-of-congress/summary?cid=${osId}" target="_blank" class="rep-link">$ Finance</a>`:'<a href="https://www.opensecrets.org/members-of-congress" target="_blank" class="rep-link">$ Finance</a>'}
+        <a href="https://ballotpedia.org/${encodeURIComponent(name)}" target="_blank" class="rep-link">Ballotpedia</a>
       </div>
     </div>`;
   });
+
   document.getElementById('rep-res').style.display='block';
 }
 
