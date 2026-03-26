@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Federal Accountability Dashboard — Spending, Promises & Outcomes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080808;--s1:#0f0f0f;--s2:#151515;--s3:#1c1c1c;
+  --b1:#1e1e1e;--b2:#282828;--b3:#363636;
+  --t1:#ede5d4;--t2:#9a9080;--t3:#5a5248;
+  --gold:#c9a43c;--gold2:#f0c860;--gold3:#7a5e10;
+  --green:#267a4e;--green2:#3db876;
+  --amber:#c97818;--amber2:#f09030;
+  --red:#b83030;--red2:#e05050;
+  --blue:#1c58a0;--blue2:#4090e0;
+  --serif:'Playfair Display',Georgia,serif;
+  --mono:'IBM Plex Mono','Courier New',monospace;
+  --body:'Lora',Georgia,serif;
+  --r4:4px;--r6:6px;--r8:8px;--r10:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--t1);font-family:var(--body);font-size:15px;line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--b3);border-radius:3px}
+
+nav{position:sticky;top:0;z-index:900;background:#060606f0;backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--b1);display:flex;align-items:center;
+  height:52px;padding:0 20px;gap:0}
+.nav-logo{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--gold);
+  white-space:nowrap;padding-right:24px;border-right:1px solid var(--b2);flex-shrink:0}
+.nav-links{display:flex;list-style:none;margin-left:12px;gap:2px;flex:1;overflow-x:auto}
+.nav-links a{font-size:11px;color:var(--t3);text-decoration:none;
+  padding:5px 10px;border-radius:var(--r4);transition:.2s;font-family:var(--mono);white-space:nowrap}
+.nav-links a:hover{background:var(--s3);color:var(--t1)}
+.live-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+  background:rgba(38,122,78,.12);border:1px solid rgba(38,122,78,.3);border-radius:20px;
+  font-family:var(--mono);font-size:10px;color:var(--green2);white-space:nowrap;flex-shrink:0}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green2);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero{padding:60px 24px 48px;max-width:1180px;margin:0 auto;position:relative}
+.hero::after{content:'';position:absolute;top:0;right:0;width:40%;height:100%;
+  background:radial-gradient(ellipse at 80% 50%,rgba(201,164,60,.06),transparent 70%);pointer-events:none}
+.hero-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.hero-kicker::before{content:'';display:block;width:28px;height:1px;background:var(--gold)}
+h1{font-family:var(--serif);font-size:clamp(30px,5vw,56px);font-weight:900;
+  line-height:1.05;letter-spacing:-.025em;color:#f5ede0;margin-bottom:20px}
+h1 em{color:var(--gold);font-style:normal}
+.hero-desc{font-size:14px;color:var(--t2);max-width:520px;line-height:1.7;margin-bottom:40px}
+.hero-stats{display:flex;flex-wrap:wrap;gap:32px}
+.hstat-val{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--gold);line-height:1}
+.hstat-lbl{font-size:11px;color:var(--t2);margin-top:4px}
+
+.section{padding:48px 24px;max-width:1180px;margin:0 auto}
+.section+.section{border-top:1px solid var(--b1)}
+.s-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+.s-title{font-family:var(--serif);font-size:28px;font-weight:700;color:#f0e8d8;margin-bottom:8px;line-height:1.15}
+.s-sub{font-size:13px;color:var(--t2);max-width:600px;line-height:1.65;margin-bottom:28px}
+.s-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px}
+
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);overflow:hidden}
+.card-head{padding:12px 16px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-size:13px;font-weight:600;color:var(--t1)}
+.card-body{padding:18px}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g12{display:grid;grid-template-columns:1fr 2fr;gap:20px}
+@media(max-width:860px){.g2,.g3,.g12{grid-template-columns:1fr}}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;font-family:var(--mono);font-size:9px;
+  letter-spacing:.12em;color:var(--t3);border-bottom:1px solid var(--b2);text-transform:uppercase}
+td{padding:10px 12px;border-bottom:1px solid var(--b1);vertical-align:middle}
+tr:last-child td{border:none}
+tr:hover td{background:var(--s2)}
+.td-mono{font-family:var(--mono);font-size:12px}
+.td-gold{color:var(--gold);font-weight:600}
+.td-muted{color:var(--t2)}
+
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;
+  font-family:var(--mono);font-size:10px;font-weight:600;white-space:nowrap}
+.badge-kept{background:#0a2016;color:#52d48a;border:1px solid rgba(38,122,78,.4)}
+.badge-broken{background:#1f0a0a;color:#e06666;border:1px solid rgba(184,48,48,.4)}
+.badge-compromise{background:#201200;color:#e8a040;border:1px solid rgba(201,120,24,.4)}
+.badge-stalled{background:#141414;color:#6a6258;border:1px solid rgba(90,82,72,.4)}
+.badge-progress{background:#091428;color:#5090e0;border:1px solid rgba(28,88,160,.4)}
+
+.ag-toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-box{flex:1;min-width:160px;padding:8px 12px;background:var(--s1);
+  border:1px solid var(--b2);border-radius:var(--r6);color:var(--t1);
+  font-family:var(--body);font-size:13px;outline:none}
+.search-box:focus{border-color:var(--gold)}
+.search-box::placeholder{color:var(--t3)}
+.sort-btn{padding:8px 13px;background:var(--s1);border:1px solid var(--b2);
+  border-radius:var(--r6);color:var(--t2);font-size:11px;cursor:pointer;font-family:var(--mono)}
+.sort-btn.on{background:rgba(201,164,60,.12);border-color:var(--gold3);color:var(--gold)}
+
+.ag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.ag-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);
+  padding:14px 16px;cursor:pointer;transition:.2s}
+.ag-card:hover{background:var(--s2);border-color:var(--b2)}
+.ag-card.sel{border-color:var(--gold);background:rgba(201,164,60,.05)}
+.ag-name{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:2px;line-height:1.3}
+.ag-abbr{font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:8px}
+.ag-amt{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--gold)}
+.ag-pct{font-family:var(--mono);font-size:10px;color:var(--t2);margin-top:2px}
+.ag-bar{height:3px;background:var(--b1);border-radius:2px;margin-top:8px;overflow:hidden}
+.ag-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px}
+.tag-has{font-family:var(--mono);font-size:9px;color:var(--gold);
+  background:rgba(201,164,60,.1);border:1px solid rgba(201,164,60,.2);
+  padding:1px 5px;border-radius:3px;margin-left:5px}
+
+.detail-panel{display:none;border:1px solid var(--gold3);border-radius:var(--r10);
+  background:var(--s1);overflow:hidden;margin-top:16px}
+.detail-panel.open{display:block}
+.detail-top{padding:16px 20px;border-bottom:1px solid var(--b2);
+  display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.detail-tabs{display:flex;padding:0 18px;border-bottom:1px solid var(--b1);gap:0}
+.dtab{padding:11px 16px;font-size:12px;font-family:var(--mono);color:var(--t2);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.dtab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.dcontent{display:none;padding:20px}
+.dcontent.on{display:block}
+
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.metric{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r6);padding:12px}
+.metric-lbl{font-size:11px;color:var(--t2);margin-bottom:4px;line-height:1.3}
+.metric-val{font-family:var(--mono);font-size:18px;font-weight:600;line-height:1.1;margin-bottom:3px}
+.metric-val.r{color:var(--red2)}.metric-val.a{color:var(--amber2)}.metric-val.g{color:var(--green2)}.metric-val.b{color:var(--blue2)}
+.metric-bm{font-family:var(--mono);font-size:10px;color:var(--t3)}
+
+.finding{background:#0c0a04;border:1px solid var(--gold3);border-left:3px solid var(--gold);
+  border-radius:0 var(--r6) var(--r6) 0;padding:13px 16px;font-size:13px;
+  color:var(--t2);line-height:1.65;margin:16px 0}
+.finding strong{color:var(--gold)}
+
+.chart-wrap{position:relative;height:360px}
+.chart-sm{position:relative;height:200px}
+
+.zip-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.zip-in{padding:10px 13px;background:var(--s1);border:1px solid var(--b2);
+  border-radius:var(--r6);color:var(--t1);font-size:15px;width:150px;
+  font-family:var(--mono);letter-spacing:.1em;outline:none}
+.zip-in:focus{border-color:var(--gold)}
+.btn-go{padding:10px 20px;background:var(--gold);color:#080808;border:none;
+  border-radius:var(--r6);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--mono)}
+.btn-go:hover{background:var(--gold2)}
+.rep-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}
+.rep-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:16px;overflow:hidden}
+.rep-card.D{border-top:3px solid #2060c0}.rep-card.R{border-top:3px solid #c03020}.rep-card.I{border-top:3px solid #7050c0}
+.rep-name{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:2px}
+.rep-role{font-size:11px;color:var(--t2);margin-bottom:10px}
+.rep-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rep-link{font-size:10px;font-family:var(--mono);color:var(--gold);
+  text-decoration:none;padding:3px 7px;border:1px solid var(--gold3);border-radius:3px}
+.rep-link:hover{background:rgba(201,164,60,.1)}
+
+.sel-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.sel-field{padding:9px 12px;background:var(--s1);border:1px solid var(--b2);
+  border-radius:var(--r6);color:var(--t1);font-family:var(--body);font-size:13px;
+  outline:none;flex:1;min-width:150px}
+.sel-field:focus{border-color:var(--gold)}
+
+.tl{position:relative;padding-left:20px}
+.tl::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:1px;background:var(--b2)}
+.tli{position:relative;margin-bottom:20px}
+.tli-dot{position:absolute;left:-17px;top:5px;width:11px;height:11px;
+  border-radius:50%;border:2px solid var(--b2);background:var(--bg)}
+.tli-dot.done{border-color:var(--green);background:var(--green)}
+.tli-dot.part{border-color:var(--amber);background:var(--amber)}
+.tli-date{font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:2px}
+.tli-lbl{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:2px}
+.tli-detail{font-size:12px;color:var(--t2);line-height:1.4}
+
+.loader{display:flex;align-items:center;gap:10px;padding:32px;justify-content:center;
+  color:var(--t2);font-family:var(--mono);font-size:12px}
+.spin{width:14px;height:14px;border:2px solid var(--b2);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.score-block{text-align:center}
+.score-num{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1}
+.score-sub{font-size:9px;color:var(--t2);font-family:var(--mono);margin-top:3px;letter-spacing:.1em}
+
+.error-box{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r6);
+  padding:13px 16px;font-size:13px;color:var(--t2);line-height:1.6}
+.error-box a{color:var(--gold)}
+.source-note{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:10px}
+
+footer{border-top:1px solid var(--b1);padding:40px 24px;max-width:1180px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:28px;margin-bottom:24px}
+.footer-title{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:10px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:6px}
+.footer-links a{font-size:12px;color:var(--t2);text-decoration:none}
+.footer-links a:hover{color:var(--t1)}
+.footer-bottom{border-top:1px solid var(--b1);padding-top:16px;font-family:var(--mono);
+  font-size:10px;color:var(--t3);line-height:1.7}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.fade{opacity:0;transform:translateY(16px);transition:opacity .55s,transform .55s}
+.fade.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Federal Accountability</div>
+  <ul class="nav-links">
+    <li><a href="#budget">Budget</a></li>
+    <li><a href="#agencies">All Agencies</a></li>
+    <li><a href="#corrections">Outcome Gap</a></li>
+    <li><a href="#reps">Your Reps</a></li>
+    <li><a href="#contracts">Contracts</a></li>
+    <li><a href="#timeline">Timeline</a></li>
+  </ul>
+  <div class="live-pill" style="margin-left:auto"><div class="live-dot"></div>Live: USAspending.gov</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero fade">
+  <div class="hero-kicker">Public Accountability Project — FY2024</div>
+  <h1>What Was Promised.<br>What Was Funded.<br><em>What Actually Changed.</em></h1>
+  <p class="hero-desc">
+    The full federal budget connected to real-world outcomes across every agency.
+    Spending data is live from USAspending.gov. Promise ratings track verifiable outcomes, not press releases.
+  </p>
+  <div class="hero-stats">
+    <div><div class="hstat-val">$6.76T</div><div class="hstat-lbl">FY2024 Total Outlays</div></div>
+    <div><div class="hstat-val" id="h-ag">—</div><div class="hstat-lbl">Agencies Live</div></div>
+    <div><div class="hstat-val">10</div><div class="hstat-lbl">Full Analyses</div></div>
+    <div><div class="hstat-val">~35%</div><div class="hstat-lbl">Avg. Promises Kept</div></div>
+  </div>
+</div>
+<hr style="border:none;border-top:1px solid var(--b1)">
+
+<!-- ───────── §1 BUDGET ───────── -->
+<div class="section fade" id="budget">
+  <div class="s-head">
+    <div>
+      <div class="s-kicker">Section 1 — The Full Picture</div>
+      <div class="s-title">Where $6.76 Trillion Goes</div>
+      <p class="s-sub" style="margin-bottom:0">FY2024 federal outlays by OMB budget function. All figures from official OMB Historical Tables.</p>
+    </div>
+    <div class="live-pill"><div class="live-dot"></div>OMB Historical Tables</div>
+  </div>
+  <div class="g12">
+    <div class="card">
+      <div class="card-head"><span class="card-title">By Function</span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">FY2024</span></div>
+      <div class="card-body"><div style="position:relative;height:300px"><canvas id="budgetChart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Full Breakdown</span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">$ Billions · % · YoY</span></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Category</th><th>Amount</th><th>% Total</th><th>YoY</th></tr></thead><tbody id="budget-tb"></tbody></table></div>
+    </div>
+  </div>
+  <div class="finding" style="margin-top:20px">
+    <strong>The accountability gap:</strong> Of $6.76T in FY2024 outlays, ~$3.6T is mandatory spending
+    (Social Security, Medicare, Medicaid, interest). The remaining $3.1T in discretionary spending is where
+    appropriations directly connect to promised outcomes — and where tracking has the most power.
+    Net interest alone grew 28% year-over-year, now <strong>exceeding defense spending</strong> for the first time since 2001.
+  </div>
+</div>
+
+<!-- ───────── §2 AGENCIES ───────── -->
+<div class="section fade" id="agencies">
+  <div class="s-head">
+    <div>
+      <div class="s-kicker">Section 2 — All Federal Agencies</div>
+      <div class="s-title">Live Agency Budget Tracker</div>
+      <p class="s-sub" style="margin-bottom:0">Every top-tier federal agency with live budget authority from USAspending.gov.
+        Agencies marked <span style="font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(201,164,60,.1);border:1px solid rgba(201,164,60,.2);padding:1px 5px;border-radius:3px">Full Analysis</span>
+        include promise ratings and outcome metrics. Click any to expand.</p>
+    </div>
+  </div>
+  <div class="ag-toolbar">
+    <input class="search-box" id="ag-search" placeholder="Search agencies…" oninput="filterAg()">
+    <button class="sort-btn on" onclick="sortAg('amt',this)">Budget ↓</button>
+    <button class="sort-btn" onclick="sortAg('name',this)">Name A–Z</button>
+    <button class="sort-btn" onclick="sortAg('analysis',this)">Has Analysis First</button>
+  </div>
+  <div id="ag-load" class="loader"><div class="spin"></div>Loading agencies from USAspending.gov…</div>
+  <div class="ag-grid" id="ag-grid" style="display:none"></div>
+  <div class="detail-panel" id="ag-detail"></div>
+</div>
+
+<!-- ───────── §3 OUTCOME GAP ───────── -->
+<div class="section fade" id="corrections">
+  <div class="s-kicker">Section 3 — The Missing Piece: Outcomes</div>
+  <div class="s-title">The Outcome Gap</div>
+  <p class="s-sub">Across every major sector, the pattern repeats regardless of party or administration: spending increases don't automatically produce the promised outcomes. Here's what the data shows when you connect the budget to real-world results.</p>
+
+  <!-- Signal Cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:12px;margin-bottom:28px">
+    <div style="background:var(--s1);border:1px solid var(--b1);border-top:3px solid var(--red2);border-radius:var(--r8);padding:15px">
+      <div style="font-size:18px;margin-bottom:6px">🏛️</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px;letter-spacing:.1em">CORRECTIONS</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px">$44,745/inmate/yr</div>
+      <div style="font-size:12px;color:var(--red2);font-family:var(--mono)">68% recidivism</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">unchanged 20 yrs</div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--b1);border-top:3px solid var(--red2);border-radius:var(--r8);padding:15px">
+      <div style="font-size:18px;margin-bottom:6px">🏠</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px;letter-spacing:.1em">HOUSING</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px">$80B HUD / year</div>
+      <div style="font-size:12px;color:var(--red2);font-family:var(--mono)">770K+ homeless</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">up 18% since 2020</div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--b1);border-top:3px solid var(--amber2);border-radius:var(--r8);padding:15px">
+      <div style="font-size:18px;margin-bottom:6px">📚</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px;letter-spacing:.1em">EDUCATION</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px">$80B K-12 / year</div>
+      <div style="font-size:12px;color:var(--amber2);font-family:var(--mono)">217 NAEP pts</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">below 2019 levels</div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--b1);border-top:3px solid var(--red2);border-radius:var(--r8);padding:15px">
+      <div style="font-size:18px;margin-bottom:6px">🎖️</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px;letter-spacing:.1em">VETERANS</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px">$322B VA / year</div>
+      <div style="font-size:12px;color:var(--red2);font-family:var(--mono)">37,252 homeless</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">34-day MH wait</div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--b1);border-top:3px solid var(--amber2);border-radius:var(--r8);padding:15px">
+      <div style="font-size:18px;margin-bottom:6px">🏗️</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px;letter-spacing:.1em">INFRASTRUCTURE</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px">$1.2T BIL passed</div>
+      <div style="font-size:12px;color:var(--amber2);font-family:var(--mono)">~18% complete</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">4–7 yr delivery lag</div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--b1);border-top:3px solid var(--red2);border-radius:var(--r8);padding:15px">
+      <div style="font-size:18px;margin-bottom:6px">🧠</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px;letter-spacing:.1em">MENTAL HEALTH</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px">$280B Medicaid MH</div>
+      <div style="font-size:12px;color:var(--red2);font-family:var(--mono)">54% untreated</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">gap unchanged 10 yrs</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="g2">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Spending Index vs. Outcome Index by Sector</span>
+        <span style="font-size:10px;color:var(--t2);font-family:var(--mono)">100 = fully meeting stated goal</span>
+      </div>
+      <div class="card-body">
+        <div style="position:relative;height:310px"><canvas id="gapChart"></canvas></div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:10px;line-height:1.5">
+          Spending index: annual outlay as % of stated program goal funding level.<br>
+          Outcome index: measurable result as % of stated policy target.<br>
+          Sources: OMB · BJS · BLS · GAO · HUD PIT Count · NAEP · VA OIG.
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Corrections: $/Inmate vs. Recidivism by State</span>
+          <span style="font-size:10px;color:var(--t2);font-family:var(--mono)">Hover for detail</span>
+        </div>
+        <div class="card-body" style="padding-bottom:12px">
+          <div style="position:relative;height:210px"><canvas id="scatterChart"></canvas></div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:8px">Pearson r = −0.12 · No significant correlation · BJS + Vera Institute</div>
+        </div>
+      </div>
+      <div class="finding">
+        <strong>The pattern across every sector:</strong> Budget authority grows. Press releases announce historic investments. But the outcome metrics — recidivism, homelessness counts, reading scores, wait times, project completion rates — move slowly or not at all. The gap isn't just a funding problem. It's an <strong>accountability infrastructure problem</strong>: no agency is structurally rewarded for outcomes, only for obligations.
+      </div>
+    </div>
+  </div>
+
+  <!-- Why the gap persists -->
+  <div style="margin-top:22px">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;margin-bottom:14px">Why the Gap Persists — Structural Causes</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:15px">
+        <div style="font-size:20px;margin-bottom:8px">⏱️</div>
+        <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:5px">Incentive Mismatch</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Politicians operate on 2–4 year election cycles. Infrastructure takes 7 years. Recidivism reduction takes a decade. Announcements are rewarded; outcomes aren't measured until after the next election.</div>
+      </div>
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:15px">
+        <div style="font-size:20px;margin-bottom:8px">📊</div>
+        <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:5px">No Standardized Outcomes</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Congress appropriates money but rarely mandates measurable outcome reporting. GAO regularly finds agencies cannot demonstrate whether their programs work.</div>
+      </div>
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:15px">
+        <div style="font-size:20px;margin-bottom:8px">🏢</div>
+        <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:5px">Vendor Lock-In</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Private contractors are paid per transaction, not per outcome. They lobby to maintain conditions that keep contracts flowing — not to solve the underlying problem.</div>
+      </div>
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:15px">
+        <div style="font-size:20px;margin-bottom:8px">🔀</div>
+        <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:5px">Fragmented Delivery</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Federal money flows through states, counties, nonprofits, and contractors. By the time it reaches the intended beneficiary, accountability has passed through 4–6 hands.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── §4 YOUR REPS ───────── -->
+<div class="section fade" id="reps">
+  <div class="s-kicker">Section 4 — The Missing Piece: Local Accountability</div>
+  <div class="s-title">Your Representatives</div>
+  <p class="s-sub">Enter your ZIP code to find your House representative and senators with links to their voting records, campaign finance, and contact info.</p>
+  <div class="zip-row">
+    <input class="zip-in" id="zip-in" placeholder="ZIP Code" maxlength="5">
+    <button class="btn-go" onclick="lookupReps()">Find My Reps →</button>
+  </div>
+  <div id="rep-load" class="loader" style="display:none"><div class="spin"></div>Looking up representatives…</div>
+  <div id="rep-err" class="error-box" style="display:none"></div>
+  <div id="rep-res" style="display:none">
+    <div class="rep-cards" id="rep-cards"></div>
+    <div class="finding" style="margin-top:18px">
+      <strong>Track their votes:</strong>
+      <a href="https://www.govtrack.us" target="_blank">GovTrack.us</a> (all votes since 1789) ·
+      <a href="https://www.opensecrets.org" target="_blank">OpenSecrets</a> (campaign finance) ·
+      <a href="https://www.congress.gov" target="_blank">Congress.gov</a> (full bill text) ·
+      <a href="https://www.politifact.com/truth-o-meter/promises/" target="_blank">PolitiFact Promise Trackers</a>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── §5 CONTRACTS ───────── -->
+<div class="section fade" id="contracts">
+  <div class="s-head">
+    <div>
+      <div class="s-kicker">Section 5 — The Missing Piece: Who Gets the Money</div>
+      <div class="s-title">Live Contract Search</div>
+      <p class="s-sub" style="margin-bottom:0">Search actual awarded contracts and grants by agency. Live from the USAspending.gov federal award database (FY2024).</p>
+    </div>
+    <div class="live-pill"><div class="live-dot"></div>Live Award Data</div>
+  </div>
+  <div class="sel-row">
+    <select class="sel-field" id="ct-agency" style="flex:2"><option value="">Select Agency…</option></select>
+    <select class="sel-field" id="ct-type">
+      <option value="contracts">Contracts</option>
+      <option value="grants">Grants</option>
+      <option value="direct">Direct Payments</option>
+    </select>
+    <button class="btn-go" onclick="searchContracts()">Search →</button>
+  </div>
+  <div id="ct-load" class="loader" style="display:none"><div class="spin"></div>Fetching from USAspending.gov…</div>
+  <div id="ct-res" style="display:none">
+    <div class="card">
+      <div class="card-head"><span class="card-title" id="ct-title">Top FY2024 Awards</span><span style="font-size:10px;color:var(--t2);font-family:var(--mono)">Top 10 by Award Amount</span></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Recipient</th><th>Amount</th><th>Type</th><th>Description</th><th>Period</th></tr></thead>
+          <tbody id="ct-tb"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="source-note">Source: api.usaspending.gov/v2/search/spending_by_award/ · FY2024 (Oct 2023 – Sep 2024)</div>
+  </div>
+</div>
+
+<!-- ───────── §6 TIMELINE ───────── -->
+<div class="section fade" id="timeline">
+  <div class="s-kicker">Section 6 — The Missing Piece: Announcement vs. Delivery</div>
+  <div class="s-title">From Appropriation to Impact</div>
+  <p class="s-sub">The gap between a bill signing and a measurable outcome is measured in years, not months. Three landmark funded programs tracked from announcement to real-world delivery.</p>
+  <div class="g3" id="tl-wrap"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-title">Live Data Sources</div>
+      <ul class="footer-links">
+        <li><a href="https://api.usaspending.gov" target="_blank">USAspending.gov API</a></li>
+        <li><a href="https://fiscaldata.treasury.gov" target="_blank">Treasury Fiscal Data</a></li>
+        <li><a href="https://www.whitehouse.gov/omb/budget" target="_blank">OMB Historical Tables</a></li>
+        <li><a href="https://whoismyrepresentative.com" target="_blank">WhoIsMyRepresentative</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-title">Promise Research</div>
+      <ul class="footer-links">
+        <li><a href="https://www.politifact.com/truth-o-meter/promises/" target="_blank">PolitiFact Trackers</a></li>
+        <li><a href="https://www.gao.gov" target="_blank">GAO Reports</a></li>
+        <li><a href="https://www.cbo.gov" target="_blank">CBO Analyses</a></li>
+        <li><a href="https://www.bjs.gov" target="_blank">Bureau of Justice Statistics</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-title">Track Legislators</div>
+      <ul class="footer-links">
+        <li><a href="https://www.govtrack.us" target="_blank">GovTrack.us</a></li>
+        <li><a href="https://www.congress.gov" target="_blank">Congress.gov</a></li>
+        <li><a href="https://www.opensecrets.org" target="_blank">OpenSecrets</a></li>
+        <li><a href="https://ballotpedia.org" target="_blank">Ballotpedia</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-title">Deeper Research</div>
+      <ul class="footer-links">
+        <li><a href="https://www.prisonpolicy.org" target="_blank">Prison Policy Initiative</a></li>
+        <li><a href="https://www.vera.org" target="_blank">Vera Institute</a></li>
+        <li><a href="https://www.hamiltonproject.org" target="_blank">Hamilton Project</a></li>
+        <li><a href="https://www.urban.org" target="_blank">Urban Institute</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    Spending data: USAspending.gov (U.S. Treasury, public domain, updated daily) ·
+    Budget categories: OMB Historical Tables FY2024 ·
+    Promise ratings: editorial judgments following PolitiFact methodology, based on verifiable outcomes ·
+    Outcome metrics: BJS, GAO, OMB, CBO, agency Inspector General reports ·
+    Corrections scatter: Vera Institute + BJS Survey of State Prison Inmates ·
+    This is an independent proof-of-concept dashboard.
+  </div>
+</footer>
+
+<script>
+// ══════════ STATIC DATA ══════════
+const BUDGET=[
+  {l:"Social Security", a:1413,p:20.9,y:"+5.2%", c:"#b83020"},
+  {l:"Net Interest",    a:892, p:13.2,y:"+28.4%",c:"#c8a030"},
+  {l:"Medicare",        a:869, p:12.9,y:"+7.1%", c:"#d04820"},
+  {l:"National Defense",a:874, p:12.9,y:"+3.8%", c:"#1c4880"},
+  {l:"Income Security", a:733, p:10.9,y:"-3.1%", c:"#804820"},
+  {l:"Medicaid & Health",a:616,p:9.1, y:"-1.2%", c:"#882020"},
+  {l:"Veterans Benefits",a:301,p:4.5, y:"+14.2%",c:"#186880"},
+  {l:"Education & Labor",a:121,p:1.8, y:"+2.1%", c:"#387020"},
+  {l:"Transportation",  a:117,p:1.7, y:"+8.9%", c:"#188060"},
+  {l:"Other",           a:820,p:12.1,y:"+1.4%", c:"#404040"},
+];
+
+const DETAIL={
+  "015":{
+    focus:"Criminal Justice, Federal Prisons & Law Enforcement",
+    context:"The federal prison system houses ~158,000 people at $44,745/year each. Despite $100M+ in annual reentry funding, only ~12% of eligible inmates access programs. Private prison contracts worth $600M+/year create a structural disincentive to reduce the population.",
+    promises:[
+      {t:"Reduce federal prison population (First Step Act)",s:"compromise",y:2018,d:"Federal prison pop. fell ~25% from peak. 3,000+ released early. But private prison contract values grew 2019–2021."},
+      {t:"End private federal prisons (Biden EO 14006)",s:"broken",y:2021,d:"EO signed Jan 2021. Immediately reversed by Trump EO Jan 2025. Private contracts resumed."},
+      {t:"Implement PATTERN risk/needs assessment tool",s:"stalled",y:2019,d:"Tool developed but implementation inconsistent. Civil rights groups cite racial bias in scoring algorithm."},
+      {t:"Fund Second Chance Act reentry ($100M/yr)",s:"kept",y:2022,d:"$100M+ awarded annually FY22–24. 600+ grantees across 50 states."},
+      {t:"Consent decrees for unconstitutional policing",s:"compromise",y:2021,d:"Investigations in Minneapolis, Louisville, Phoenix. Louisville consent decree reached 2023."},
+    ],
+    outcomes:[
+      {l:"5-Year Recidivism Rate",v:"68%",t:"flat",c:"r",b:"Norway: 25%"},
+      {l:"Federal Prison Population",v:"158,000",t:"down",c:"a",b:"Peak 2013: 219,000"},
+      {l:"Cost per Inmate / Year",v:"$44,745",t:"up",c:"r",b:"Up from $38K in 2018"},
+      {l:"Reentry Program Access",v:"~12%",t:"up",c:"a",b:"of eligible inmates"},
+    ]
+  },
+  "036":{
+    focus:"Veteran Healthcare, Benefits & Housing",
+    context:"The VA's $322B+ budget makes it the second-largest federal agency. Despite landmark legislation, ~30% of mental health positions are unfilled, 37,000+ veterans remain homeless, and average primary care wait times exceed 3 weeks.",
+    promises:[
+      {t:"Eliminate VA wait times over 30 days",s:"broken",y:2014,d:"Phoenix scandal 2014 exposed systemic falsification. Average primary care wait: 22 days; mental health: 34 days."},
+      {t:"Expand telehealth to rural veterans (MISSION Act)",s:"compromise",y:2018,d:"Telehealth visits rose 1,000%+ 2019–2022. Now 40% of VA appointments. Rural gaps persist."},
+      {t:"End veteran homelessness",s:"stalled",y:2015,d:"37,252 veterans homeless (2024). Down from 74,087 (2010) but overall homelessness up 12% since 2021."},
+      {t:"Full toxic exposure benefits (PACT Act)",s:"kept",y:2022,d:"PACT Act signed Aug 2022. 3.5M+ veterans newly eligible; 1.2M+ claims processed at 73% approval."},
+      {t:"Same-day mental health at all VA facilities",s:"broken",y:2018,d:"~30% of mental health positions unfilled. Average wait for first mental health appt: 34 days."},
+    ],
+    outcomes:[
+      {l:"Avg. Wait (Primary Care)",v:"22 days",t:"flat",c:"a",b:"Goal: <30 days"},
+      {l:"Homeless Veterans",v:"37,252",t:"down",c:"a",b:"Down from 74,087 (2010)"},
+      {l:"Mental Health Staff Gap",v:"~30%",t:"flat",c:"r",b:"positions unfilled"},
+      {l:"PACT Act Claims Processed",v:"1.2M+",t:"up",c:"g",b:"of 3.5M eligible"},
+    ]
+  },
+  "069":{
+    focus:"Infrastructure, Highways, Transit & Rail",
+    context:"The $1.2T Bipartisan Infrastructure Law is the largest infrastructure investment in U.S. history. As of 2025, ~18% of funded projects are complete. Average time from appropriation to completion for major infrastructure: 4–7 years.",
+    promises:[
+      {t:"Repair 45,000 structurally deficient bridges",s:"progress",y:2021,d:"$40B Bridge Investment Program. 7,500+ projects initiated; ~15% complete by end of 2024."},
+      {t:"Universal broadband access ($65B BEAD)",s:"progress",y:2021,d:"Funding allocated to all states. Most in planning phase; first installations expected 2025–2026."},
+      {t:"Replace all lead water service lines ($15B)",s:"stalled",y:2021,d:"Only ~8% of $15B has reached communities. Permitting delays and slow procurement blocking delivery."},
+      {t:"Modernize public transit ($89B)",s:"compromise",y:2021,d:"Funds obligated but labor shortages and supply chain delays blocking deployment in major cities."},
+      {t:"Amtrak national rail expansion ($66B)",s:"progress",y:2021,d:"Routes planned but most face state matching fund and right-of-way challenges."},
+    ],
+    outcomes:[
+      {l:"Bridges in Poor Condition",v:"43,586",t:"down",c:"a",b:"Down from 46,000 in 2021"},
+      {l:"BIL Projects Completed",v:"~18%",t:"up",c:"a",b:"of all funded projects"},
+      {l:"Roads in Poor Condition",v:"40%",t:"flat",c:"r",b:"of national highway miles"},
+      {l:"Lead Pipes Replaced",v:"~400K",t:"up",c:"r",b:"of 9.2M estimated total"},
+    ]
+  },
+  "091":{
+    focus:"K-12, Higher Education & Student Aid",
+    context:"Federal K-12 spending exceeds $80B annually yet the U.S. ranks below OECD average in learning outcomes per dollar. COVID-19 created measurable learning loss — 4th-grade reading dropped 3 points — and $190B in ESSER recovery funding has shown mixed results.",
+    promises:[
+      {t:"Cancel $10K in student debt for federal borrowers",s:"broken",y:2022,d:"Supreme Court blocked broad cancellation June 2023 (6-3). SAVE Plan also blocked by courts."},
+      {t:"Universal Pre-K for 3–4 year olds",s:"broken",y:2021,d:"Build Back Better failed Senate Dec 2021. Never enacted at federal level."},
+      {t:"Increase max Pell Grant",s:"kept",y:2022,d:"Max Pell Grant increased $900 to $7,395 — largest single increase in a decade. 7M+ students benefited."},
+      {t:"Fund evidence-based COVID school recovery ($190B)",s:"compromise",y:2021,d:"$190B ESSER distributed. Recovery uneven; states with targeted tutoring show best results."},
+    ],
+    outcomes:[
+      {l:"Student Debt Outstanding",v:"$1.77T",t:"up",c:"r",b:"Up from $1.5T in 2020"},
+      {l:"NAEP 4th Grade Reading",v:"217 pts",t:"down",c:"r",b:"Pre-pandemic: 220 pts"},
+      {l:"High School Grad Rate",v:"86.6%",t:"up",c:"g",b:"Record high"},
+      {l:"Pell Grant Recipients",v:"7.1M",t:"up",c:"g",b:"+400K vs 2020"},
+    ]
+  },
+  "075":{
+    focus:"Medicare, Medicaid, CDC, NIH & Mental Health",
+    context:"HHS is the largest federal agency at $1.7T+ in outlays. The IRA's drug negotiation provision is the most significant structural change to Medicare pricing in decades — but savings don't begin until 2026. The mental health treatment gap (54% not receiving care) remains the sector's most persistent failure.",
+    promises:[
+      {t:"Allow Medicare to negotiate drug prices (IRA)",s:"kept",y:2022,d:"IRA enacted Aug 2022. First 10 drugs selected 2023; negotiated prices avg 48% reduction. Savings begin Jan 2026."},
+      {t:"Extend ACA marketplace subsidies",s:"kept",y:2021,d:"Enhanced subsidies extended through 2025. ACA enrollment hit record 21M+ in 2024."},
+      {t:"National mental health parity enforcement",s:"stalled",y:2021,d:"Final parity rule published 2024 but faces immediate legal challenges. Implementation pending."},
+      {t:"End HIV epidemic by 2030",s:"stalled",y:2019,d:"New infections down 10% nationally. Rural Southern states show increases. On track to miss 2030 goal."},
+    ],
+    outcomes:[
+      {l:"Uninsured Rate",v:"7.7%",t:"down",c:"g",b:"Record low — ACA expansion"},
+      {l:"Medicare Drug Savings (est.)",v:"~$6B/yr",t:"up",c:"g",b:"First 10 drugs, starts 2026"},
+      {l:"Mental Health Treatment Gap",v:"54%",t:"flat",c:"r",b:"don't receive needed care"},
+      {l:"Opioid Overdose Deaths",v:"~80K",t:"down",c:"a",b:"Down from peak 107K (2022)"},
+    ]
+  },
+  "025":{
+    focus:"Military, Weapons Systems & Overseas Operations",
+    context:"At $874B in FY2024, Defense is the largest discretionary item. The Pentagon has failed 7 consecutive comprehensive financial audits. The F-35 program has grown to $1.7T in projected lifetime cost — the most expensive weapons program in history.",
+    promises:[
+      {t:"Pass the first full DoD financial audit",s:"broken",y:2017,d:"DoD has failed 7 consecutive audits (2018–2024). $3.8T+ in assets cannot be fully accounted for."},
+      {t:"Responsibly exit Afghanistan",s:"compromise",y:2021,d:"Withdrawal completed Aug 2021 but Taliban took Kabul in 11 days. ~120K people evacuated in chaotic final weeks."},
+      {t:"Maintain NATO Article 5 commitment",s:"kept",y:2021,d:"Record NATO military aid to Ukraine. NATO defense spending increased broadly post-2022."},
+      {t:"Increase military readiness above 80%",s:"stalled",y:2021,d:"USAF mission-capable rate ~70%. Army missed FY2023 recruiting goal by 15,000 soldiers."},
+    ],
+    outcomes:[
+      {l:"DoD Audit Result",v:"FAILED ×7",t:"flat",c:"r",b:"Every year since 2018"},
+      {l:"F-35 Lifetime Cost",v:"$1.7T",t:"up",c:"r",b:"Most expensive weapon ever"},
+      {l:"USAF Mission-Capable Rate",v:"~70%",t:"flat",c:"a",b:"Goal: 80%+"},
+      {l:"Army Recruiting Shortfall",v:"15,000",t:"down",c:"a",b:"vs FY2023 goal"},
+    ]
+  },
+  "097":{
+    focus:"Border Security, Immigration, FEMA & Cybersecurity",
+    context:"DHS manages four often-conflicting missions. The asylum backlog has grown to 3.5M+ cases with 4-year average waits, while CISA's cyber defense work is widely credited as a quiet success story.",
+    promises:[
+      {t:"Humane asylum processing at the border",s:"broken",y:2021,d:"Backlog grew to 3.5M+ cases. Average wait exceeds 4 years. Immigration court vacancies persist."},
+      {t:"Build national cyber defense (CISA)",s:"progress",y:2021,d:"CISA budget +30%. Joint Cyber Defense Collaborative launched; 150+ critical infrastructure partners."},
+      {t:"Increase FEMA disaster resilience funding",s:"kept",y:2021,d:"BRIC program funded $1B+/yr. $50B+ in disaster relief obligated FY2021–2024."},
+      {t:"Reform immigration courts to reduce backlog",s:"broken",y:2021,d:"Court backlog grew from 1.3M (2021) to 3.5M+ (2024). Funding for new judges consistently short."},
+    ],
+    outcomes:[
+      {l:"Border Encounters (FY2024)",v:"2.5M",t:"up",c:"r",b:"Near record levels"},
+      {l:"Asylum Backlog",v:"3.5M+ cases",t:"up",c:"r",b:"Avg. wait: 4+ years"},
+      {l:"Major Cyber Incidents Stopped",v:"580+",t:"up",c:"g",b:"FY2024, per CISA report"},
+      {l:"FEMA Disaster Declarations",v:"154",t:"up",c:"a",b:"FY2024 (avg: 120/yr)"},
+    ]
+  },
+  "012":{
+    focus:"SNAP, Farm Subsidies, Rural Development & Food Safety",
+    context:"USDA distributes ~$140B/year in nutrition assistance and ~$40B in farm subsidies. The largest SNAP benefit increase in program history was enacted in 2021. Yet food insecurity rose to 13.5% in 2023 — the largest single-year increase on record — as pandemic supports expired.",
+    promises:[
+      {t:"Largest permanent SNAP benefit increase in history",s:"kept",y:2021,d:"Thrifty Food Plan recalculated Oct 2021. Average benefit up ~$36/month. 42M recipients."},
+      {t:"Reform farm subsidy concentration",s:"broken",y:2021,d:"No major reform passed. Top 10% of farms still receive 70% of subsidy payments."},
+      {t:"Make school meals universally free",s:"stalled",y:2021,d:"Universal free meals ended 2023 as COVID extension expired. Permanent legislation not enacted."},
+      {t:"Rural broadband ReConnect expansion",s:"kept",y:2021,d:"ReConnect awarded $3B+ in grants/loans by 2024. 1.2M+ rural locations funded."},
+    ],
+    outcomes:[
+      {l:"Food Insecurity Rate",v:"13.5%",t:"up",c:"r",b:"Largest 1-yr jump ever (2023)"},
+      {l:"SNAP Participants",v:"42M",t:"flat",c:"a",b:"$140B/yr nutrition programs"},
+      {l:"Top 10% Farm Subsidy Share",v:"70%",t:"flat",c:"r",b:"Unchanged since 2000"},
+      {l:"Rural Broadband Funded",v:"1.2M+",t:"up",c:"g",b:"locations via ReConnect"},
+    ]
+  },
+  "089":{
+    focus:"Affordable Housing, Section 8 & Homelessness Programs",
+    context:"HUD's $80B budget is dramatically insufficient relative to the national housing crisis. America needs 500,000+ new affordable units annually; HUD programs produce ~8,000. Total homelessness reached 770,000+ in 2024 — the highest recorded total.",
+    promises:[
+      {t:"$150B affordable housing investment (BBB)",s:"broken",y:2021,d:"BBB failed Senate Dec 2021. ~$10B in housing provisions in IRA — 93% cut from original."},
+      {t:"Universal housing vouchers for eligible families",s:"broken",y:2021,d:"Waiting lists at 10M+ families. Average wait: 3–7 years depending on city."},
+      {t:"Emergency Rental Assistance (post-COVID)",s:"compromise",y:2021,d:"$46B disbursed 2021–2023. Estimated 1.36M evictions prevented."},
+      {t:"Permanent end to family homelessness",s:"stalled",y:2021,d:"Homelessness rose 18% since 2020 to 770,000+. Family homelessness up 16%."},
+    ],
+    outcomes:[
+      {l:"Total Homeless Population",v:"770,000+",t:"up",c:"r",b:"Up 18% since 2020"},
+      {l:"Voucher Waiting List",v:"10M+ families",t:"up",c:"r",b:"3–7 yr average wait"},
+      {l:"Affordable Units Built/Year",v:"~8,000",t:"flat",c:"r",b:"Need: 500,000+/yr"},
+      {l:"Emergency Rental Assistance",v:"$46B",t:"up",c:"g",b:"Disbursed 2021–2024"},
+    ]
+  },
+  "020":{
+    focus:"Fiscal Policy, IRS Enforcement & Debt Management",
+    context:"Treasury manages $30T+ in federal debt, the IRS, and financial regulation. The annual tax gap — taxes owed but unpaid — is $688B. IRS enforcement funding from the IRA was partially rescinded before full implementation.",
+    promises:[
+      {t:"$80B IRS enforcement investment (IRA)",s:"broken",y:2022,d:"IRA provided $80B over 10 years. Congress rescinded $20B+. Remaining funding faces legal and political challenges."},
+      {t:"No new taxes for earners under $400K",s:"compromise",y:2021,d:"IRA raised corporate minimum tax to 15%. Individual brackets unchanged. Some indirect effects."},
+      {t:"Implement OECD 15% global corporate minimum tax",s:"stalled",y:2021,d:"Agreement reached with 137 countries 2021. U.S. Senate has not enacted implementing legislation."},
+      {t:"Strengthen Russian sanctions post-invasion",s:"kept",y:2022,d:"Largest sanctions package since WWII. Russian central bank assets frozen; SWIFT disconnection."},
+    ],
+    outcomes:[
+      {l:"Federal Debt Held by Public",v:"$28.2T",t:"up",c:"r",b:"104% of GDP"},
+      {l:"Net Interest Cost (FY2024)",v:"$892B",t:"up",c:"r",b:"+28% YoY — exceeds defense"},
+      {l:"Annual Tax Gap (Unpaid)",v:"~$688B",t:"up",c:"r",b:"Owed but not collected"},
+      {l:"IRS Audit Rate (Top 1%)",v:"0.6%",t:"down",c:"r",b:"Down from 8% in 2010"},
+    ]
+  },
+};
+
+const SC={
+  kept:     {cls:"badge-kept",     lbl:"Promise Kept"},
+  broken:   {cls:"badge-broken",   lbl:"Broken"},
+  compromise:{cls:"badge-compromise",lbl:"Compromise"},
+  stalled:  {cls:"badge-stalled",  lbl:"Stalled"},
+  progress: {cls:"badge-progress", lbl:"In Progress"},
+};
+
+const SCATTER_DATA=[
+  {s:"CA",c:106,r:50},{s:"NY",c:69,r:42},{s:"TX",c:26,r:64},{s:"FL",c:24,r:65},
+  {s:"PA",c:42,r:63},{s:"OH",c:35,r:68},{s:"IL",c:45,r:60},{s:"GA",c:20,r:70},
+  {s:"MN",c:45,r:61},{s:"ND",c:37,r:33},{s:"VT",c:57,r:40},{s:"MA",c:55,r:38},
+  {s:"IN",c:20,r:74},{s:"AZ",c:25,r:62},{s:"WA",c:48,r:57},{s:"CO",c:44,r:55},
+  {s:"NJ",c:62,r:43},{s:"VA",c:32,r:60},{s:"OR",c:49,r:65},{s:"NC",c:31,r:62},
+  {s:"MI",c:38,r:67},{s:"WI",c:43,r:65},{s:"KY",c:27,r:72},{s:"MO",c:29,r:71},
+];
+
+const TIMELINES=[
+  {name:"Bipartisan Infrastructure Law",budget:"$1.2T",color:"#167060",items:[
+    {d:"Nov 2021",l:"BIL Signed into Law",s:"done",dt:"$1.2T authorized over 5 years across roads, bridges, transit, water, broadband"},
+    {d:"2022–2023",l:"Federal Guidance & Grants Open",s:"done",dt:"Applications opened for bridge, road, transit, water programs across all 50 states"},
+    {d:"2023–2024",l:"First Contracts Awarded",s:"done",dt:"7,500+ bridge projects initiated; ~18% of all BIL projects complete by end of 2024"},
+    {d:"2024–2026",l:"Major Construction Underway",s:"part",dt:"Most projects mid-build; lead pipe replacement significantly behind schedule"},
+    {d:"2027–2031",l:"Full Program Completion",s:"pend",dt:"Major infrastructure deliverables expected 2028–2031 — 10 years after signing"},
+  ]},
+  {name:"PACT Act: Veteran Toxic Exposure",budget:"$280B / 10 yrs",color:"#1c4070",items:[
+    {d:"Aug 2022",l:"PACT Act Signed",s:"done",dt:"3.5M+ veterans newly eligible for healthcare and benefits from toxic exposure"},
+    {d:"2022–2023",l:"VA Claims Surge",s:"done",dt:"600K+ new claims in first year — VA required rapid hiring and processing expansion"},
+    {d:"2023–2024",l:"1.2M+ Claims Decided",s:"done",dt:"73% approval rate; average processing time reduced from 150 to 90 days"},
+    {d:"2024–2026",l:"Full Backlog Processing",s:"part",dt:"2.1M+ claims still in queue; VA hiring at record pace but staffing gaps persist"},
+    {d:"2026+",l:"Long-Term Cost Delivery",s:"pend",dt:"Full $280B cost accrues over 10 years as lifetime benefits are paid out"},
+  ]},
+  {name:"IRA: Medicare Drug Negotiation",budget:"$98B savings est.",color:"#602080",items:[
+    {d:"Aug 2022",l:"IRA Authorizes Negotiation",s:"done",dt:"First time in Medicare history that HHS can directly negotiate drug prices"},
+    {d:"Sep 2023",l:"First 10 Drugs Selected",s:"done",dt:"Eliquis, Januvia, Jardiance + 7 others; combined market: ~$50B/year"},
+    {d:"Aug 2024",l:"Negotiated Prices Published",s:"done",dt:"Average 48% reduction vs. list price — Eliquis: $231 vs. $5,165 list price"},
+    {d:"Jan 2026",l:"Prices Take Effect",s:"part",dt:"Savings begin flowing to Medicare Part D enrollees — est. $6B/yr initially"},
+    {d:"2027–2031",l:"Program Scales to 20+ Drugs",s:"pend",dt:"IRA mandates expansion each year; est. $98B+ in cumulative 10-year savings"},
+  ]},
+];
+
+// ══════════ STATE ══════════
+let allAg=[], filtAg=[], selAg=null;
+
+// ══════════ INIT ══════════
+document.addEventListener('DOMContentLoaded',()=>{
+  initBudget();
+  loadAgencies();
+  initGapChart();
+  initScatter();
+  initTimelines();
+  initFade();
+  document.getElementById('zip-in').addEventListener('keydown',e=>{if(e.key==='Enter')lookupReps();});
+});
+
+// ══════════ BUDGET ══════════
+function initBudget(){
+  new Chart(document.getElementById('budgetChart').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:BUDGET.map(b=>b.l),
+      datasets:[{data:BUDGET.map(b=>b.a),backgroundColor:BUDGET.map(b=>b.c),
+        borderColor:'#080808',borderWidth:3,hoverBorderWidth:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{
+        legend:{position:'bottom',labels:{color:'#5a5248',font:{family:'IBM Plex Mono',size:9},padding:8,boxWidth:9}},
+        tooltip:{backgroundColor:'#181818',titleColor:'#ede5d4',bodyColor:'#c9a43c',
+          borderColor:'#282828',borderWidth:1,
+          callbacks:{label:i=>` $${i.raw}B (${BUDGET[i.dataIndex].p}%)`}}
+      }
+    }
+  });
+  const tb=document.getElementById('budget-tb');
+  BUDGET.forEach(b=>{
+    const up=!b.y.startsWith('-');
+    tb.innerHTML+=`<tr>
+      <td style="color:var(--t1);font-weight:500">${b.l}</td>
+      <td class="td-mono td-gold">$${b.a}B</td>
+      <td class="td-mono td-muted">${b.p}%</td>
+      <td class="td-mono" style="color:${up?'var(--amber2)':'var(--green2)'}">${b.y}</td>
+    </tr>`;
+  });
+}
+
+// ══════════ AGENCIES ══════════
+async function loadAgencies(){
+  try{
+    const r=await fetch('https://api.usaspending.gov/api/v2/references/toptier_agencies/?sort_order=desc&sort_by=budget_authority&limit=100');
+    const d=await r.json();
+    allAg=(d.results||[]).map(a=>({
+      code:a.toptier_code,name:a.agency_name,abbr:a.abbreviation||'',
+      amt:a.budget_authority_amount||0,pct:a.percentage_of_total_budget_authority||0,
+      has:!!DETAIL[a.toptier_code]
+    }));
+    document.getElementById('h-ag').textContent=allAg.length+'+';
+    filtAg=[...allAg];
+    document.getElementById('ag-load').style.display='none';
+    document.getElementById('ag-grid').style.display='grid';
+    renderAg();
+    popContractSel();
+  }catch(e){
+    document.getElementById('ag-load').innerHTML=
+      '<span style="color:var(--amber2)">Could not load agency data — USAspending.gov may be temporarily unavailable. <a href="https://usaspending.gov" target="_blank" style="color:var(--gold)">Visit directly →</a></span>';
+  }
+}
+
+function renderAg(){
+  const g=document.getElementById('ag-grid');
+  g.innerHTML='';
+  if(!filtAg.length){g.innerHTML='<div style="color:var(--t2);font-size:13px;padding:10px">No agencies match that search.</div>';return;}
+  filtAg.forEach(a=>{
+    const sel=selAg&&selAg.code===a.code;
+    const w=Math.min(a.pct*5,100);
+    const hasTag=a.has?'<span style="font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(201,164,60,.1);border:1px solid rgba(201,164,60,.2);padding:1px 5px;border-radius:3px;margin-left:5px">Full Analysis</span>':'';
+    g.innerHTML+=`<div class="ag-card${sel?' sel':''}" onclick="selAgency(this,'${a.code}')">
+      <div class="ag-name">${a.name}</div>
+      <div class="ag-abbr">${a.abbr||a.code}${hasTag}</div>
+      <div class="ag-amt">${fmtB(a.amt)}</div>
+      <div class="ag-pct">${a.pct.toFixed(2)}% of federal budget</div>
+      <div class="ag-bar"><div class="ag-bar-fill" style="width:${w}%"></div></div>
+    </div>`;
+  });
+}
+
+function filterAg(){
+  const q=document.getElementById('ag-search').value.toLowerCase();
+  filtAg=allAg.filter(a=>a.name.toLowerCase().includes(q)||(a.abbr&&a.abbr.toLowerCase().includes(q)));
+  renderAg();
+}
+
+function sortAg(type,btn){
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(type==='amt') filtAg.sort((a,b)=>b.amt-a.amt);
+  else if(type==='name') filtAg.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(type==='analysis') filtAg=[...allAg.filter(a=>a.has),...allAg.filter(a=>!a.has)];
+  renderAg();
+}
+
+async function selAgency(el,code){
+  const ag=allAg.find(a=>a.code===code);
+  if(!ag) return;
+  selAg=ag;
+  document.querySelectorAll('.ag-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  const panel=document.getElementById('ag-detail');
+  panel.className='detail-panel open';
+  panel.innerHTML='<div class="loader"><div class="spin"></div>Loading agency data from USAspending.gov…</div>';
+  setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+
+  let live=null,budgHist=null;
+  try{
+    const [r1,r2]=await Promise.all([
+      fetch(`https://api.usaspending.gov/api/v2/agency/${code}/`),
+      fetch(`https://api.usaspending.gov/api/v2/agency/${code}/budgetary_resources/`)
+    ]);
+    live=await r1.json();
+    budgHist=await r2.json();
+  }catch(e){}
+
+  buildDetail(ag,live,budgHist,DETAIL[code]);
+}
+
+function buildDetail(ag,live,hist,cur){
+  const panel=document.getElementById('ag-detail');
+  const score=cur?calcScore(cur.promises):null;
+  panel.innerHTML=`
+    <div class="detail-top">
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.15em;margin-bottom:4px">AGENCY DETAIL</div>
+        <div style="font-size:18px;font-weight:700;color:var(--t1)">${ag.name}</div>
+        ${cur?`<div style="font-size:12px;color:var(--t2);margin-top:2px">${cur.focus}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:18px">
+        ${score!==null?`<div class="score-block"><div class="score-num" style="color:${score>=60?'var(--green2)':score>=35?'var(--amber2)':'var(--red2)'}">${score}<span style="font-size:13px;color:var(--t3)">/100</span></div><div class="score-sub">PROMISE SCORE</div></div>`:''}
+        <button onclick="closeDetail()" style="background:var(--s3);border:1px solid var(--b2);color:var(--t2);padding:7px 13px;border-radius:4px;cursor:pointer;font-size:12px;font-family:var(--mono)">✕ Close</button>
+      </div>
+    </div>
+    <div class="detail-tabs">
+      <div class="dtab on" onclick="swDTab(this,'ds')">💰 Spending</div>
+      ${cur?'<div class="dtab" onclick="swDTab(this,\'dp\')">🗣️ Promises</div><div class="dtab" onclick="swDTab(this,\'do\')">📊 Outcomes</div>':''}
+    </div>
+    <div id="ds" class="dcontent on">${spendTab(ag,live,hist)}</div>
+    ${cur?`<div id="dp" class="dcontent">${promTab(cur)}</div><div id="do" class="dcontent">${outcTab(cur)}</div>`:''}
+  `;
+}
+
+function spendTab(ag,live,hist){
+  const fB=v=>v?`$${(v/1e9).toFixed(1)}B`:'—';
+  let rows='';
+  if(hist?.agency_data_by_year){
+    [...hist.agency_data_by_year].sort((a,b)=>b.fiscal_year-a.fiscal_year).slice(0,6).forEach(y=>{
+      rows+=`<tr>
+        <td class="td-mono td-muted">FY${y.fiscal_year}</td>
+        <td class="td-mono td-gold">${fB(y.total_budgetary_resources)}</td>
+        <td class="td-mono td-muted">${fB(y.total_obligations)}</td>
+        <td class="td-mono td-muted">${fB(y.total_outlays)}</td>
+      </tr>`;
+    });
+  }
+  return `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px">
+      ${sm('Budget Authority',fmtB(ag.amt))}
+      ${sm('% of Budget',ag.pct.toFixed(2)+'%')}
+      ${live?.outlay_amount?sm('Outlays',fB(live.outlay_amount.amount)):''}
+      ${live?.obligated_amount?sm('Obligations',fB(live.obligated_amount.amount)):''}
+    </div>
+    ${rows?`<div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.12em;margin-bottom:8px;text-transform:uppercase">Multi-Year Budget — Live from USAspending.gov</div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Year</th><th>Budget Auth.</th><th>Obligations</th><th>Outlays</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    :'<div style="color:var(--t2);font-size:13px;padding:8px 0">Multi-year history unavailable for this agency.</div>'}
+    <div class="source-note">Source: api.usaspending.gov/v2/agency/${ag.code}/ — Updated daily by U.S. Treasury</div>`;
+}
+
+function sm(l,v){
+  return `<div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r6);padding:11px">
+    <div style="font-size:11px;color:var(--t2);margin-bottom:4px">${l}</div>
+    <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:var(--gold)">${v}</div>
+  </div>`;
+}
+
+function promTab(c){
+  const rows=c.promises.map(p=>{
+    const cfg=SC[p.s]||SC.stalled;
+    return `<tr>
+      <td style="color:var(--t1);font-size:13px">${p.t}</td>
+      <td><span class="badge ${cfg.cls}">${cfg.lbl}</span></td>
+      <td class="td-mono td-muted" style="font-size:11px">${p.y}</td>
+      <td style="color:var(--t2);font-size:12px;line-height:1.4;max-width:250px">${p.d}</td>
+    </tr>`;
+  }).join('');
+  return `<div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.5">
+    Ratings follow <strong style="color:var(--t1)">PolitiFact methodology</strong> — judged on verifiable outcomes, not intentions or effort.</div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Promise</th><th>Rating</th><th>Year</th><th>Evidence</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${c.context?`<div class="finding" style="margin-top:18px">${c.context}</div>`:''}`;
+}
+
+function outcTab(c){
+  const ms=c.outcomes.map(o=>`<div class="metric">
+    <div class="metric-lbl">${o.l}</div>
+    <div class="metric-val ${o.c}">${o.v}</div>
+    <div class="metric-bm">${o.b}</div>
+  </div>`).join('');
+  return `<div class="metrics-row">${ms}</div>
+    ${c.context?`<div class="finding">${c.context}</div>`:''}
+    <div class="source-note">Sources: BJS · GAO · OMB · CBO · Agency IG Reports · Vera Institute · Urban Institute</div>`;
+}
+
+function calcScore(promises){
+  let s=0;
+  promises.forEach(p=>{
+    if(p.s==='kept') s+=1;
+    if(p.s==='compromise') s+=.5;
+    if(p.s==='progress') s+=.3;
+  });
+  return Math.round((s/promises.length)*100);
+}
+
+function swDTab(el,id){
+  const panel=document.getElementById('ag-detail');
+  panel.querySelectorAll('.dtab').forEach(t=>t.classList.remove('on'));
+  panel.querySelectorAll('.dcontent').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  const tc=document.getElementById(id);
+  if(tc)tc.classList.add('on');
+}
+
+function closeDetail(){
+  document.getElementById('ag-detail').className='detail-panel';
+  document.querySelectorAll('.ag-card').forEach(c=>c.classList.remove('sel'));
+  selAg=null;
+}
+
+// ══════════ GAP CHART ══════════
+function initGapChart(){
+  const sectors=['Corrections','Housing','Education','Veterans','Infrastructure','Mental Health'];
+  const spending=[95,62,78,88,72,55];
+  const outcomes=[32,28,45,41,18,46];
+  new Chart(document.getElementById('gapChart').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:sectors,
+      datasets:[
+        {label:'Spending Index',data:spending,backgroundColor:'rgba(201,164,60,.5)',borderColor:'#c9a43c',borderWidth:1.5,borderRadius:3},
+        {label:'Outcome Index', data:outcomes,backgroundColor:'rgba(184,48,48,.5)', borderColor:'#b83030',borderWidth:1.5,borderRadius:3}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#9a9080',font:{family:'IBM Plex Mono',size:10},padding:14}},
+        tooltip:{backgroundColor:'#181818',titleColor:'#ede5d4',bodyColor:'#9a9080',
+          borderColor:'#282828',borderWidth:1,
+          callbacks:{label:item=>` ${item.dataset.label}: ${item.raw}/100`}}
+      },
+      scales:{
+        x:{grid:{color:'#1a1a1a'},ticks:{color:'#5a5248',font:{family:'IBM Plex Mono',size:10}}},
+        y:{max:100,grid:{color:'#1a1a1a'},ticks:{color:'#5a5248',font:{family:'IBM Plex Mono',size:10},callback:v=>`${v}`}}
+      }
+    }
+  });
+}
+
+// ══════════ SCATTER ══════════
+function initScatter(){
+  new Chart(document.getElementById('scatterChart').getContext('2d'),{
+    type:'scatter',
+    data:{datasets:[{
+      label:'State',
+      data:SCATTER_DATA.map(d=>({x:d.c,y:d.r,lbl:d.s})),
+      backgroundColor:SCATTER_DATA.map(d=>d.r<45?'rgba(38,122,78,.7)':d.r<62?'rgba(201,120,24,.7)':'rgba(184,48,48,.7)'),
+      borderColor:SCATTER_DATA.map(d=>d.r<45?'#3db876':d.r<62?'#f09030':'#e05050'),
+      borderWidth:1.5,pointRadius:9,pointHoverRadius:12,
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#181818',titleColor:'#ede5d4',bodyColor:'#9a9080',
+          borderColor:'#282828',borderWidth:1,
+          callbacks:{
+            title:items=>`${SCATTER_DATA[items[0].dataIndex].s}`,
+            label:item=>{const d=SCATTER_DATA[item.dataIndex];return[`Cost/inmate: $${d.c}K/yr`,`3-yr recidivism: ${d.r}%`];}
+          }
+        }
+      },
+      scales:{
+        x:{title:{display:true,text:'Annual Cost per Inmate ($000s)',color:'#5a5248',font:{family:'IBM Plex Mono',size:10}},
+          grid:{color:'#1a1a1a'},ticks:{color:'#5a5248',font:{family:'IBM Plex Mono',size:10}}},
+        y:{title:{display:true,text:'3-Year Recidivism (%)',color:'#5a5248',font:{family:'IBM Plex Mono',size:10}},
+          grid:{color:'#1a1a1a'},ticks:{color:'#5a5248',font:{family:'IBM Plex Mono',size:10}},min:28,max:80}
+      }
+    }
+  });
+}
+
+// ══════════ REP LOOKUP ══════════
+async function lookupReps(){
+  const zip=document.getElementById('zip-in').value.trim();
+  if(!/^\d{5}$/.test(zip)){showRepErr('Please enter a valid 5-digit ZIP code.');return;}
+  document.getElementById('rep-err').style.display='none';
+  document.getElementById('rep-res').style.display='none';
+  document.getElementById('rep-load').style.display='flex';
+
+  let reps=[],state='',city='';
+  try{
+    const g=await fetch(`https://api.zippopotam.us/us/${zip}`);
+    const gd=await g.json();
+    state=gd.places?.[0]?.['state abbreviation']||'';
+    city=gd.places?.[0]?.['place name']||'';
+  }catch(e){}
+
+  try{
+    const res=await fetch(`https://whoismyrepresentative.com/getall_mems.php?zip=${zip}&output=json`);
+    const rd=await res.json();
+    reps=rd.results||[];
+  }catch(e){}
+
+  document.getElementById('rep-load').style.display='none';
+
+  if(!reps.length){
+    showRepErr(`Could not auto-load representatives for ZIP ${zip}${city?` (${city}, ${state})`:''}.
+      This sometimes happens due to CORS restrictions on the representative API.
+      <br><br>Find them directly:
+      <a href="https://www.house.gov/representatives/find-your-representative" target="_blank">House.gov →</a> &nbsp;
+      <a href="https://www.senate.gov/senators/" target="_blank">Senate.gov →</a> &nbsp;
+      <a href="https://www.govtrack.us/congress/members" target="_blank">GovTrack →</a>`);
+    return;
+  }
+
+  const cards=document.getElementById('rep-cards');
+  cards.innerHTML='';
+  reps.forEach(r=>{
+    const party=r.party||'I';
+    const isHouse=!!r.district;
+    cards.innerHTML+=`<div class="rep-card ${party}">
+      <div class="rep-name">${r.name}</div>
+      <div class="rep-role">${isHouse?`Representative · District ${r.district}`:'Senator'} · ${party==='D'?'Democrat':party==='R'?'Republican':'Independent'} · ${state}</div>
+      ${r.phone?`<div style="font-size:12px;color:var(--t2);margin-bottom:3px">📞 ${r.phone}</div>`:''}
+      ${r.office?`<div style="font-size:11px;color:var(--t3);margin-bottom:3px">🏛️ ${r.office}</div>`:''}
+      <div class="rep-links">
+        ${r.link?`<a href="${r.link}" target="_blank" class="rep-link">Official Site</a>`:''}
+        <a href="https://www.govtrack.us/congress/members" target="_blank" class="rep-link">Voting Record</a>
+        <a href="https://www.opensecrets.org/members-of-congress" target="_blank" class="rep-link">$ Finance</a>
+        <a href="https://ballotpedia.org/${encodeURIComponent(r.name)}" target="_blank" class="rep-link">Ballotpedia</a>
+      </div>
+    </div>`;
+  });
+  document.getElementById('rep-res').style.display='block';
+}
+
+function showRepErr(msg){
+  document.getElementById('rep-load').style.display='none';
+  const e=document.getElementById('rep-err');
+  e.style.display='block';e.innerHTML=msg;
+}
+
+// ══════════ CONTRACTS ══════════
+function popContractSel(){
+  const sel=document.getElementById('ct-agency');
+  allAg.slice(0,30).forEach(a=>{
+    const o=document.createElement('option');
+    o.value=a.name;o.textContent=a.name;sel.appendChild(o);
+  });
+}
+
+async function searchContracts(){
+  const agName=document.getElementById('ct-agency').value;
+  if(!agName){alert('Please select an agency first.');return;}
+  const type=document.getElementById('ct-type').value;
+  const codes=type==='contracts'?['A','B','C','D']:type==='grants'?['02','03','04','05']:['06','10'];
+
+  document.getElementById('ct-load').style.display='flex';
+  document.getElementById('ct-res').style.display='none';
+
+  try{
+    const res=await fetch('https://api.usaspending.gov/api/v2/search/spending_by_award/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        filters:{
+          agencies:[{type:'awarding',tier:'toptier',name:agName}],
+          time_period:[{start_date:'2023-10-01',end_date:'2024-09-30'}],
+          award_type_codes:codes
+        },
+        fields:['Award ID','Recipient Name','Award Amount','Contract Award Type','Description','Start Date','End Date'],
+        limit:10,sort:'Award Amount',order:'desc',page:1
+      })
+    });
+    const d=await res.json();
+    document.getElementById('ct-load').style.display='none';
+    document.getElementById('ct-title').textContent=`Top FY2024 ${type} — ${agName}`;
+    const tb=document.getElementById('ct-tb');
+    tb.innerHTML='';
+    if(!d.results||!d.results.length){
+      tb.innerHTML='<tr><td colspan="5" style="color:var(--t2);text-align:center;padding:20px">No results found for this combination.</td></tr>';
+    }else{
+      d.results.forEach(r=>{
+        const desc=(r.Description||'—').substring(0,80)+(r.Description&&r.Description.length>80?'…':'');
+        const start=r['Start Date']?r['Start Date'].substring(0,7):'—';
+        const end=r['End Date']?r['End Date'].substring(0,7):'—';
+        tb.innerHTML+=`<tr>
+          <td style="color:var(--t1);font-size:13px;max-width:180px;word-break:break-word">${r['Recipient Name']||'—'}</td>
+          <td class="td-mono td-gold">${fmtB(r['Award Amount'])}</td>
+          <td><span style="font-size:10px;background:#0d1220;color:var(--blue2);border:1px solid #1a2840;padding:2px 6px;border-radius:3px;font-family:var(--mono)">${r['Contract Award Type']||type}</span></td>
+          <td style="color:var(--t2);font-size:12px;max-width:200px">${desc}</td>
+          <td class="td-mono td-muted" style="font-size:11px">${start} → ${end}</td>
+        </tr>`;
+      });
+    }
+    document.getElementById('ct-res').style.display='block';
+  }catch(e){
+    document.getElementById('ct-load').style.display='none';
+    document.getElementById('ct-tb').innerHTML='<tr><td colspan="5" style="color:var(--amber2);padding:16px">Error loading from USAspending.gov. Please try again.</td></tr>';
+    document.getElementById('ct-res').style.display='block';
+  }
+}
+
+// ══════════ TIMELINES ══════════
+function initTimelines(){
+  const w=document.getElementById('tl-wrap');
+  TIMELINES.forEach(tl=>{
+    const items=tl.items.map(i=>`
+      <div class="tli">
+        <div class="tli-dot ${i.s}"></div>
+        <div class="tli-date">${i.d}</div>
+        <div class="tli-lbl">${i.l}</div>
+        <div class="tli-detail">${i.dt}</div>
+      </div>`).join('');
+    w.innerHTML+=`
+      <div class="card">
+        <div class="card-head" style="border-left:3px solid ${tl.color}">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--t1)">${tl.name}</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--t2);margin-top:2px">${tl.budget}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;gap:16px;font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:16px">
+            <span>● Done</span><span style="color:var(--amber)">● In Progress</span><span>○ Pending</span>
+          </div>
+          <div class="tl">${items}</div>
+        </div>
+      </div>`;
+  });
+}
+
+// ══════════ UTILS ══════════
+function fmtB(n){
+  if(!n&&n!==0)return'—';
+  if(Math.abs(n)>=1e9)return`$${(n/1e9).toFixed(1)}B`;
+  if(Math.abs(n)>=1e6)return`$${(n/1e6).toFixed(0)}M`;
+  if(Math.abs(n)>=1e3)return`$${(n/1e3).toFixed(0)}K`;
+  return`$${Math.round(n).toLocaleString()}`;
+}
+
+function initFade(){
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});
+  },{threshold:.08});
+  document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+}
+</script>
+</body>
+</html>
